@@ -63,8 +63,9 @@ public class Player_Controller : MonoBehaviour
     void Start()
     {
         //初始化武器
-        weapon_Colliders[0].Init(AudioSource);
-        weapon_Colliders[1].Init(AudioSource);
+        weapon_Colliders[0].Init(AudioSource,Animator);
+        weapon_Colliders[1].Init(AudioSource, Animator);
+        weapon_Colliders[2].Init(AudioSource, Animator);
     }
 
     // Update is called once per frame
@@ -129,6 +130,12 @@ public class Player_Controller : MonoBehaviour
             playerState = PlayerState.Attack;
             Animator.SetTrigger("StandAttack");
         }
+        //技能
+        else if (Input.GetKeyDown(KeyCode.R))
+        {
+            playerState = PlayerState.Attack;
+            Animator.SetTrigger("Skill");
+        }
     }
 
     //动画事件
@@ -176,6 +183,12 @@ public class Player_Controller : MonoBehaviour
             Animator.SetTrigger("StandAttack");
             return;
         }
+        else if (Input.GetKeyDown(KeyCode.R))
+        {
+            Animator.SetTrigger("Skill");
+            return;
+        }
+        //Animator.CrossFadeInFixedTime("Attack1",0.2f);
         //如果当前不在后摇范围内,并且玩家按键了,回到移动状态
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
@@ -184,6 +197,7 @@ public class Player_Controller : MonoBehaviour
             Animator.SetTrigger("AttackOver");
             playerState = PlayerState.Normal;
         }
+
     }
 
 }
