@@ -19,6 +19,7 @@ public class Player_Controller : MonoBehaviour
     public CharacterController CharacterController;
     public AudioSource AudioSource;
     private PlayerState playerState;
+    public Weapon_Collider[] weapon_Colliders;
     public float MoveSpeed=1.5f;
     //private PlayerState PlayerState
     //{
@@ -43,9 +44,17 @@ public class Player_Controller : MonoBehaviour
         switch (playerState)
         {
             case PlayerState.Normal:
+                //让玩家可以控制
                 Move();
+                CheckAndEnterAttackState();
+                //让玩家可以攻击(切换到攻击状态)
                 break;
             case PlayerState.Attack:
+                //连续攻击
+                Attack();
+
+
+                //如果当前不在后摇范围内,并且玩家按键了,回到移动状态normal状态
                 break;
         }
     }
@@ -53,7 +62,9 @@ public class Player_Controller : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        //初始化武器
+        weapon_Colliders[0].Init(AudioSource);
+        weapon_Colliders[1].Init(AudioSource);
     }
 
     // Update is called once per frame
@@ -108,4 +119,77 @@ public class Player_Controller : MonoBehaviour
             transform.localRotation = Quaternion.Lerp(transform.localRotation, targerDirQuaternion, Time.deltaTime * 10f);
         }
     }
+
+    //检查并进入攻击状态
+    private void CheckAndEnterAttackState()
+    {
+        //按J普攻
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            playerState = PlayerState.Attack;
+            Animator.SetTrigger("StandAttack");
+        }
+    }
+
+    //动画事件
+
+    private bool canAttack = true;
+    //开始整个技能
+    private void StartAttack()
+    {
+        Animator.ResetTrigger("AttackOver");
+        canAttack = false;
+    }
+    //整个技能的结束
+    private void EndAttack()
+    {
+        canAttack = true;
+        Animator.SetTrigger("AttackOver");
+        playerState = PlayerState.Normal;
+    }
+    //开启伤害
+    private void StartHit(int weaponNum)
+    {
+        //播放音效
+        AudioSource.PlayOneShot(Resources.Load<AudioClip>("Audio/爪"));
+        weapon_Colliders[weaponNum].gameObject.SetActive(true);
+
+    }
+    //停止伤害
+    private void StopHit(int weaponNum)
+    {
+        weapon_Colliders[weaponNum].gameObject.SetActive(false);
+    }
+    //技能切换-后摇
+    private void CanSwitch()
+    {
+        canAttack = true;
+    }
+
+    private void Attack()
+    {
+        //如果当前不能攻击,就什么都不能做;
+        if (!canAttack) return;
+        //当前又按普攻了
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            Animator.SetTrigger("StandAttack");
+            return;
+        }
+        //如果当前不在后摇范围内,并且玩家按键了,回到移动状态
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
+        if (h != 0 || v != 0)
+        {
+            Animator.SetTrigger("AttackOver");
+            playerState = PlayerState.Normal;
+        }
+    }
+
 }
+
+
+
+
+
+
